@@ -1,0 +1,63 @@
+/* Tribal / Desia Font Integration
+   Replace placeholder font file names with actual provided font files.
+   Keep font formats: use .woff2 primarily for performance; include .woff fallback if available.
+*/
+
+/* Zilap Ethnia Display (Hero Title) */
+@font-face {
+  font-family: 'ZilapEthnia';
+  src: url('./ZilapEthnia.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Example @font-face for Desia Body */
+@font-face {
+  font-family: 'DesiaBody';
+  src: url('./DesiaBody-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Optional weight variants (uncomment when actual files exist) */
+/*
+@font-face {
+  font-family: 'DesiaDisplay';
+  src: url('./DesiaDisplay-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DesiaDisplay';
+  src: url('./DesiaDisplay-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* Utility classes for applying fonts */
+.desia-display {
+  font-family: 'DesiaDisplay', 'Noto Serif Oriya', 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.5px;
+}
+.desia-body {
+  font-family: 'DesiaBody', 'Noto Sans Oriya', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Headline style example */
+.hero-title {
+  font-family: 'ZilapEthnia', 'DesiaDisplay', 'Noto Serif Oriya', serif;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+/* Subheading style example */
+.hero-subtitle {
+  font-family: 'DesiaBody', 'Noto Sans Oriya', sans-serif;
+  font-weight: 400;
+  line-height: 1.25;
+}

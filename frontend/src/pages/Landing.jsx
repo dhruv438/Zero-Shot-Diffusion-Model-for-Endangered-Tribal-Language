@@ -1,223 +1,280 @@
-import { useNavigate } from "react-router-dom";
-import InteractiveWaveBackground from "../components/InteractiveWaveBackground.jsx";
-import RotatingWheel from "../components/RotatingWheel.jsx";
-import CoverflowCarousel from "../components/CoverflowCarousel.jsx";
+import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import '../styles/ScrollLanding.css';
 
-const problems = [
-  {
-    title: "No Parallel Datasets",
-    body: "Desia exists only in oral tradition with virtually zero digitized parallel text data for training traditional translation models.",
-  },
-  {
-    title: "Zero Digital Footprint",
-    body: "Minimal online presence means standard web-scraping and corpus-building techniques fail completely for this endangered language.",
-  },
-  {
-    title: "High Code-Mixing",
-    body: "Speakers frequently blend Desia with Odia, Hindi, and regional dialects, creating complex linguistic boundaries.",
-  },
-  {
-    title: "Linguistic Drift",
-    body: "Vocabulary and pronunciation vary significantly across villages in Koraput, making standardization challenging.",
-  },
-  {
-    title: "Morphological Richness",
-    body: "Complex word formation and agglutination require sophisticated tokenization beyond standard approaches.",
-  }
-];
-
-const solutionSteps = [
-  {
-    number: "01",
-    title: "DiffuSeq-Based Text Generation",
-    body: "Leveraging diffusion models for controllable, semantically-aware translation without parallel data requirements."
-  },
-  {
-    number: "02",
-    title: "SentencePiece Tokenization",
-    body: "Custom tokenizer trained on limited Desia corpus to handle morphological complexity and subword segmentation."
-  },
-  {
-    number: "03",
-    title: "Cross-Lingual Transfer",
-    body: "Using XLM-R embeddings to transfer knowledge from high-resource languages to zero-shot Desia translation."
-  },
-  {
-    number: "04",
-    title: "Self-Supervised Fine-Tuning",
-    body: "Iterative refinement with minimal supervision, bootstrapping from monolingual Desia text and synthetic data."
-  }
-];
-
-const features = [
-  {
-    title: "Bidirectional Translation",
-    body: "Seamlessly translate between Desia ↔ English ↔ Odia with consistent semantic preservation across all directions.",
-    badge: "Core"
-  },
-  {
-    title: "Diffusion-Based Consistency",
-    body: "Novel diffusion approach ensures semantic coherence and contextual accuracy even with limited training data.",
-    badge: "Research"
-  },
-  {
-    title: "Low-Resource Robustness",
-    body: "Specifically engineered for endangered languages with minimal digital presence and limited parallel corpora.",
-    badge: null
-  },
-  {
-    title: "Dataset Builder Tool",
-    body: "Contribute to Desia preservation by helping build the first-ever comprehensive digital Desia language dataset.",
-    badge: "Community"
-  },
-  {
-    title: "Model Playground",
-    body: "Interactive demo environment to test translations, explore model behavior, and validate outputs in real-time.",
-    badge: "New"
-  },
-  {
-    title: "Linguistic Variant Support",
-    body: "Handles regional dialects and code-mixing patterns common across Koraput's diverse village communities.",
-    badge: null
-  }
-];
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Landing() {
   const navigate = useNavigate();
+  const scalerRef = useRef(null);
+  const layer1Ref = useRef(null);
+  const layer2Ref = useRef(null);
+  const layer3Ref = useRef(null);
+
+  useEffect(() => {
+    document.documentElement.dataset.enhanced = 'true';
+    document.documentElement.dataset.center = 'true';
+    document.documentElement.dataset.layers = 'true';
+    document.documentElement.dataset.stagger = 'range';
+
+    const section = document.querySelector('main section:first-of-type');
+    
+    if (section) {
+      // Set initial states for center image
+      if (scalerRef.current) {
+        gsap.fromTo(
+          scalerRef.current,
+          { width: 'calc(100vw - 4rem)', height: 'calc(100vh - 4rem)' },
+          {
+            width: '100%',
+            height: '100%',
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1.2,
+            },
+          }
+        );
+      }
+
+      // Set initial states for layers - start hidden and small
+      if (layer1Ref.current) {
+        gsap.fromTo(
+          layer1Ref.current,
+          { opacity: 0, scale: 0 },
+          {
+            opacity: 1,
+            scale: 1,
+            ease: 'power1.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top top',
+              end: '40% top',
+              scrub: 1.2,
+            },
+          }
+        );
+      }
+
+      if (layer2Ref.current) {
+        gsap.fromTo(
+          layer2Ref.current,
+          { opacity: 0, scale: 0 },
+          {
+            opacity: 1,
+            scale: 1,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: section,
+              start: '10% top',
+              end: '65% top',
+              scrub: 1.2,
+            },
+          }
+        );
+      }
+
+      if (layer3Ref.current) {
+        gsap.fromTo(
+          layer3Ref.current,
+          { opacity: 0, scale: 0 },
+          {
+            opacity: 1,
+            scale: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: '20% top',
+              end: '80% top',
+              scrub: 1.2,
+            },
+          }
+        );
+      }
+    }
+
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
 
   return (
-    <div className="landing-page">
-      <div className="landing-bg" aria-hidden="true">
-        <InteractiveWaveBackground
-          strokeColor="rgba(255,255,255,0.45)"
-          waveSpeed={0.65}
-          waveAmplitude={0.8}
-          mouseInfluence={0.6}
-          lineSpacing={0.25}
-          seed={0.35}
-          resolution={0.4}
-        />
-      </div>
-      <div className="landing-shell">
-        <header className="landing-nav">
-          <span className="brand">Desia Translator</span>
-          <div className="nav-actions">
-            <button className="ghost-btn" onClick={() => window.open('https://github.com', '_blank')}>
-              View Research
-            </button>
-            <button className="outline-btn" onClick={() => navigate("/translate")}>
-              Try Now
-            </button>
-          </div>
+    <div className="scroll-landing">
+      <div className="content-wrap">
+        <header className="scroll-header">
+          <h1 className="fluid hero-title">
+            Preserving<br />
+            Desia.
+          </h1>
         </header>
+        
+        <main>
+          <section>
+            <div className="content">
+              <div className="grid">
+                {/* Layer 1 - Cultural Images */}
+                <div className="layer" ref={layer1Ref}>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800&auto=format&fit=crop&q=80"
+                      alt="Tribal heritage"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=800&auto=format&fit=crop&q=80"
+                      alt="Indigenous community"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&auto=format&fit=crop&q=80"
+                      alt="Traditional art"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1555881603-1f2a3d600a3c?w=800&auto=format&fit=crop&q=80"
+                      alt="Cultural wisdom"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1604537466158-719b1972feb8?w=800&auto=format&fit=crop&q=80"
+                      alt="Language preservation"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&auto=format&fit=crop&q=80"
+                      alt="Community gathering"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
 
-        {/* Hero Section */}
-        <main className="hero-stack">
-          <div className="hero-copy">
-            <p className="eyebrow">Preserving Tribal Heritage Through AI</p>
-            <h1>
-              Zero-Shot Translation for Endangered Tribal Languages
-            </h1>
-            <p className="lede">
-              Bridging the digital divide for Desia, a low-resource tribal language from Koraput. 
-              Our diffusion-based model enables accurate translation without parallel datasets, 
-              preserving linguistic heritage for future generations.
-            </p>
-            <div className="hero-cta">
-              <button className="cta" onClick={() => navigate("/translate")}>
-                Try the Model
-                <span aria-hidden="true">→</span>
-              </button>
-              <button className="link-btn" onClick={() => document.getElementById('solution-section')?.scrollIntoView({ behavior: 'smooth' })}>
-                How It Works
-              </button>
-            </div>
-            <p className="disclaimer">Open-source research project • Free to use</p>
-          </div>
+                {/* Layer 2 - Technology & Innovation */}
+                <div className="layer" ref={layer2Ref}>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80"
+                      alt="AI technology"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&auto=format&fit=crop&q=80"
+                      alt="Innovation"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=80"
+                      alt="Machine learning"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=800&auto=format&fit=crop&q=80"
+                      alt="Digital preservation"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&auto=format&fit=crop&q=80"
+                      alt="Collaboration"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80"
+                      alt="Team work"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
 
-          <div className="hero-visual-card">
-            <div className="map-visual">
-              <div className="map-marker">
-                <span className="pulse"></span>
-              </div>
-              <div className="translation-snippet">
-                <div className="snippet-header">
-                  <span className="location-tag">Koraput, Odisha</span>
+                {/* Layer 3 - Learning & Connection */}
+                <div className="layer" ref={layer3Ref}>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&auto=format&fit=crop&q=80"
+                      alt="Learning"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <img
+                      src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&auto=format&fit=crop&q=80"
+                      alt="Education"
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
-                <div className="snippet-line">
-                  <span className="lang-tag">Desia</span>
-                  <span className="text">ମୁଇ ତୋକେ ଭଲ ପାଏ</span>
-                </div>
-                <div className="snippet-arrow">↓</div>
-                <div className="snippet-line">
-                  <span className="lang-tag">English</span>
-                  <span className="text">I love you</span>
+
+                {/* Center Hero Image */}
+                <div className="scaler">
+                  <img
+                    ref={scalerRef}
+                    src="https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=1200&auto=format&fit=crop&q=90"
+                    alt="Desia Language Translator - Preserving Indigenous Heritage"
+                  />
                 </div>
               </div>
             </div>
-          </div>
+          </section>
+
+          <section className="final-section">
+            <div className="final-content">
+              <h2 className="fluid final-title">
+                Bridge the<br />
+                Language Gap.
+              </h2>
+              <p className="final-description">
+                Our AI-powered translator helps preserve the endangered Desia tribal language,<br />
+                connecting generations and keeping cultural heritage alive through cutting-edge<br />
+                zero-shot diffusion models.
+              </p>
+              <div className="cta-buttons">
+                <button 
+                  className="primary-cta"
+                  onClick={() => navigate('/translate')}
+                >
+                  Start Translating
+                  <span className="arrow">→</span>
+                </button>
+                <button 
+                  className="secondary-cta"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                >
+                  Learn More
+                </button>
+              </div>
+            </div>
+          </section>
         </main>
-
-        {/* Problem Section - 3D Rotating Wheel */}
-        <section className="problem-section">
-          <div className="section-header">
-            <h2>Challenges of Endangered Languages</h2>
-            <p className="section-subtitle">
-              Drag the wheel to explore unique obstacles that traditional NLP approaches cannot solve
-            </p>
-          </div>
-          <RotatingWheel items={problems} />
-        </section>
-
-        {/* Solution Section - Coverflow Carousel */}
-        <section className="solution-section" id="solution-section">
-          <div className="section-header">
-            <h2>Our Zero-Shot Diffusion Approach</h2>
-            <p className="section-subtitle">
-              Combining cutting-edge diffusion models with cross-lingual transfer learning, 
-              we achieve translation quality without requiring parallel training data—a first for Desia.
-            </p>
-          </div>
-          <CoverflowCarousel items={solutionSteps} />
-        </section>
-
-        {/* Features Section */}
-        <section className="features-section">
-          <div className="section-header">
-            <h2>Powerful Features for Language Preservation</h2>
-            <p className="section-subtitle">
-              Built for researchers, linguists, and community members
-            </p>
-          </div>
-          <div className="features-grid">
-            {features.map((feature) => (
-              <article key={feature.title} className="feature-card">
-                <div className="feature-head">
-                  <h3>{feature.title}</h3>
-                  {feature.badge && <span className="badge">{feature.badge}</span>}
-                </div>
-                <p>{feature.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="cta-section">
-          <div className="cta-card">
-            <h2>Ready to Experience Zero-Shot Translation?</h2>
-            <p>Try our model with your own Desia text or explore sample translations</p>
-            <button className="cta large" onClick={() => navigate("/translate")}>
-              Launch Translator
-              <span aria-hidden="true">→</span>
-            </button>
-          </div>
-        </section>
-
-        <footer className="landing-footer">
-          <p>© 2025 Desia Translator Project • Research Initiative for Tribal Language Preservation</p>
-        </footer>
       </div>
+
+      <footer className="scroll-footer">
+        <p>
+          Preserving endangered languages through technology 🌍<br />
+          © 2025 Desia Translator Project • Zero-Shot Diffusion for Tribal Language Preservation
+        </p>
+      </footer>
     </div>
   );
 }
