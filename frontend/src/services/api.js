@@ -1,71 +1,87 @@
-// API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+/**
+ * API service for Desia Translation
+ * Supports both NLLB and ChatGPT-based translation endpoints
+ */
 
-// UI <-> NLLB language code mapping
-// UI ids used in the app: 'auto' | 'desia' | 'en' | 'odia'
-// NLLB codes needed by backend: 'eng_Latn' | 'ory_Orya'
-const UI_TO_NLLB = {
-  en: 'eng_Latn',
-  odia: 'ory_Orya',
-};
+const API_BASE = 'http://127.0.0.1:5002/api';
 
-const NLLB_TO_UI = {
-  eng_Latn: 'en',
-  ory_Orya: 'odia',
-};
-
-const toNllb = (uiCode) => UI_TO_NLLB[uiCode] || uiCode;
-const toUi = (nllbCode) => NLLB_TO_UI[nllbCode] || nllbCode;
-
-// Translation API
-export const translateText = async (text, fromLang, toLang) => {
+/**
+ * Translate text using ChatGPT (recommended for Desia)
+ */
+export async function translateText(text, sourceLang, targetLang) {
   try {
-    // Handle 'auto' and 'desia' by detecting language first
-    let effectiveFrom = fromLang;
-    if (fromLang === 'auto' || fromLang === 'desia') {
-      try {
-        const det = await detectLanguage(text);
-        if (det?.detected_language === 'en' || det?.detected_language === 'odia') {
-          effectiveFrom = det.detected_language;
-        }
-      } catch (e) {
-        // Fallback: assume English
-        effectiveFrom = 'en';
+    // Map language codes
+    const langMap = {
+      'en': 'english',
+      'english': 'english',
+      'odia': 'odia',
+      'or': 'odia',
+      'desia': 'desia'
+    };
+
+    const source = langMap[sourceLang.toLowerCase()] || sourceLang;
+    const target = langMap[targetLang.toLowerCase()] || targetLang;
+
+    // Use ChatGPT endpoint for Desia translations
+    if (source === 'desia' || target === 'desia') {
+      const response = await fetch(`${API_BASE}/chatgpt/translate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          source_language: source,
+          target_language: target,
+          use_context: true,
+          use_full_dictionary: false
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Translation failed: ${response.status}`);
       }
+
+      return await response.json();
     }
 
-    // Map UI codes to NLLB codes expected by backend
-    const source_language = toNllb(effectiveFrom);
-    const target_language = toNllb(toLang);
+    // Fall back to NLLB for English↔Odia
+    const nllbLangMap = {
+      'english': 'eng_Latn',
+      'odia': 'ory_Orya'
+    };
 
-    const response = await fetch(`${API_BASE_URL}/translate`, {
+    const response = await fetch(`${API_BASE}/translate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         text,
-        source_language,
-        target_language,
+        source_language: nllbLangMap[source] || source,
+        target_language: nllbLangMap[target] || target,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Translation failed: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Translation failed: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error('Translation error:', error);
+    console.error('Translation API error:', error);
     throw error;
   }
-};
+}
 
-// Language Detection API
-export const detectLanguage = async (text) => {
+/**
+ * Detect language of input text
+ */
+export async function detectLanguage(text) {
   try {
-    const response = await fetch(`${API_BASE_URL}/detect`, {
+    const response = await fetch(`${API_BASE}/detect`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -74,27 +90,77 @@ export const detectLanguage = async (text) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Language detection failed: ${response.statusText}`);
+      throw new Error(`Detection failed: ${response.status}`);
     }
 
-    const data = await response.json();
-    // Normalize to the shape the UI expects
-    // Backend returns { language_code: 'eng_Latn'|'ory_Orya', confidence }
-    const uiCode = toUi(data.language_code);
-    return { detected_language: uiCode, confidence: data.confidence };
+    const result = await response.json();
+    
+    // Map NLLB codes to our language IDs
+    const langMap = {
+      'eng_Latn': 'en',
+      'ory_Orya': 'odia',
+      'desia': 'desia'
+    };
+
+    return {
+      detected_language: langMap[result.language_code] || result.language_code,
+      confidence: result.confidence
+    };
   } catch (error) {
     console.error('Language detection error:', error);
+    // Default to desia if detection fails
+    return { detected_language: 'desia', confidence: 0 };
+  }
+}
+
+/**
+ * Get list of supported languages
+ */
+export async function getSupportedLanguages() {
+  try {
+    const response = await fetch(`${API_BASE}/languages`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch languages: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching languages:', error);
+    return { supported: ['desia', 'english', 'odia'] };
+  }
+}
+
+/**
+ * Prime ChatGPT with full dictionary (optional, call once on app load)
+ */
+export async function primeTranslationModel() {
+  try {
+    const response = await fetch(`${API_BASE}/chatgpt/prime`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Priming failed: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Model priming error:', error);
     throw error;
   }
-};
+}
 
-// Health check
-export const checkAPIHealth = async () => {
+/**
+ * Check API health
+ */
+export async function checkHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
-    return response.ok;
+    const response = await fetch(`${API_BASE}/health`);
+    return await response.json();
   } catch (error) {
-    console.error('API health check failed:', error);
-    return false;
+    console.error('Health check failed:', error);
+    return { status: 'error' };
   }
-};
+}

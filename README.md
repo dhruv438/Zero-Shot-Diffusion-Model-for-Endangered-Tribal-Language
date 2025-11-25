@@ -9,19 +9,22 @@ A full-stack translation application preserving the Desia tribal language from K
 
 ## 🌟 Features
 
+- **Desia Language Support**: ✨ NEW! Dictionary-based translation for Desia ↔ English/Odia using Odia as bridge language
 - **English ↔ Odia Translation**: Baseline translation system using pretrained NLLB-200-distilled-600M
 - **Auto Language Detection**: Automatic detection of input language
 - **Modern UI**: React-based frontend with interactive animations
 - **REST API**: FastAPI backend with comprehensive endpoints
-- **Zero-Shot Capability**: No training data required for initial deployment
+- **Hybrid Translation**: Smart routing between dictionary-based Desia translation and NLLB for English/Odia
+- **Dictionary-Based Approach**: Uses curated Desia-Odia word pairs for accurate translation
 - **Extensible Architecture**: Ready for Desia language fine-tuning
 
 ## 🎯 Project Goals
 
 1. ✅ **Phase 1 (Complete)**: Establish English ↔ Odia translation baseline
-2. 🔄 **Phase 2 (Upcoming)**: Collect 350+ Desia-English-Odia sentence pairs
-3. 📋 **Phase 3 (Planned)**: Fine-tune NLLB with LoRA adapters for Desia
-4. 🚀 **Phase 4 (Future)**: Deploy production-ready Desia translation system
+2. ✅ **Phase 2 (Complete)**: Desia translation via dictionary-based approach using Odia as bridge language
+3. 🔄 **Phase 3 (Current)**: Expand Desia-Odia dictionary and collect sentence pairs for evaluation
+4. 📋 **Phase 4 (Planned)**: Fine-tune NLLB with LoRA adapters for direct Desia translation
+5. 🚀 **Phase 5 (Future)**: Deploy production-ready Desia translation system
 
 ## 🏗️ Architecture
 
@@ -31,15 +34,21 @@ desia-translator/
 │   ├── app/
 │   │   ├── main.py      # FastAPI application & endpoints
 │   │   ├── model.py     # NLLB model loading & translation
+│   │   ├── desia_service.py # ✨ NEW: Dictionary-based Desia translation
 │   │   └── schemas.py   # Pydantic request/response models
+│   ├── train/data/
+│   │   └── dict.csv     # ✨ NEW: Desia-Odia dictionary
 │   ├── requirements.txt
 │   └── README.md
 ├── frontend/            # React Vite application
 │   ├── src/
 │   │   ├── components/  # UI components
 │   │   ├── pages/       # Landing & Translate pages
-│   │   └── services/    # API integration
+│   │   └── services/    # API integration (updated for Desia)
 │   └── package.json
+├── start_backend.bat    # ✨ NEW: Quick start script
+├── QUICK_START.md       # ✨ NEW: Quick reference guide
+├── DESIA_TRANSLATION_GUIDE.md # ✨ NEW: Complete documentation
 └── README.md
 ```
 
@@ -90,6 +99,37 @@ npm run dev
 
 The frontend will be available at `http://localhost:5173`
 
+## 🔥 Desia Translation Setup (NEW!)
+
+### How Desia Translation Works
+
+The system uses a **dictionary-based approach** with **Odia as the bridge language**:
+
+1. **Desia → English**: Desia → Dictionary lookup → Odia → NLLB → English
+2. **English → Desia**: English → NLLB → Odia → Dictionary lookup → Desia
+3. **Desia ↔ Odia**: Direct dictionary lookup between Desia and Odia
+
+### Supported Desia Translations
+
+The following translation directions work automatically:
+- ✅ **Desia → English** (via Odia bridge)
+- ✅ **English → Desia** (via Odia bridge)
+- ✅ **Desia → Odia** (dictionary lookup)
+- ✅ **Odia → Desia** (dictionary lookup)
+- ✅ **English ↔ Odia** (NLLB - unchanged)
+
+### Dictionary
+
+The translation uses a curated Desia-Odia dictionary (`backend/train/data/dict.csv`) containing word pairs that enable accurate translation between these closely related languages.
+
+### Quick Test
+
+```powershell
+# Test Desia → English
+$body = @{text="ନମସ୍କାର"; source_language="desia"; target_language="en"} | ConvertTo-Json
+Invoke-RestMethod http://127.0.0.1:5002/api/translate -Method Post -Body $body -ContentType 'application/json'
+```
+
 ## 📡 API Endpoints
 
 ### Health Check
@@ -102,6 +142,19 @@ GET /api/health
 GET /api/languages
 ```
 Returns: `{ "supported": ["eng_Latn", "ory_Orya"], "model": "facebook/nllb-200-distilled-600M" }`
+
+### Desia Translation (NEW!)
+```http
+POST /api/translate
+Content-Type: application/json
+
+{
+  "text": "Hello world",
+  "source_language": "eng_Latn",
+  "target_language": "desia"
+}
+```
+Automatically routes to dictionary-based translation for Desia (using Odia as bridge), or NLLB for English/Odia.
 
 ### Generic Translation
 ```http
@@ -129,6 +182,7 @@ Returns: `{ "language_code": "ory_Orya", "confidence": 0.95 }`
 ### Dedicated Endpoints
 - `POST /api/translate_eng_to_odia` - English → Odia
 - `POST /api/translate_odia_to_eng` - Odia → English
+- `POST /api/translate` - Unified endpoint supporting English/Odia/Desia translations
 
 ## 🧪 Testing the Backend
 

@@ -1,15 +1,13 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InteractiveWaveBackground from "../components/InteractiveWaveBackground.jsx";
-import TranslatorPanel from "../components/TranslatorPanel.jsx";
-import FlipTransition from "../components/FlipTransition.jsx";
 import { translateText, detectLanguage } from "../services/api.js";
 
 const languages = [
-  { id: "auto", label: "Detect Language" },
-  { id: "desia", label: "Desia" },
-  { id: "en", label: "English" },
-  { id: "odia", label: "Odia" },
+  { id: "auto", label: "🔍 Auto Detect", flag: "🌐" },
+  { id: "desia", label: "Desia", flag: "🏛️" },
+  { id: "en", label: "English", flag: "🇬🇧" },
+  { id: "odia", label: "Odia", flag: "🇮🇳" },
 ];
 
 export default function Translate() {
@@ -18,61 +16,92 @@ export default function Translate() {
   const [fromLang, setFromLang] = useState("desia");
   const [toLang, setToLang] = useState("en");
   const [isTranslating, setIsTranslating] = useState(false);
-  const [showFlip, setShowFlip] = useState(true);
-  const [flipComplete, setFlipComplete] = useState(false);
-
-  const headerCopy = useMemo(
-    () => ({
-      eyebrow: "Zero-Shot Translation Model",
-      title: "Preserve Tribal Heritage Through AI",
-      subtitle:
-        "Experience our diffusion-based translation model for Desia, an endangered tribal language from Koraput. Translate between Desia, English, and Odia with semantic accuracy.",
-    }),
-    []
-  );
-
-  const handleSwap = () => {
-    if (fromLang === "auto") return;
-    setFromLang(toLang);
-    setToLang(fromLang);
-    setTranslatedText("");
-  };
+  const [detectedLang, setDetectedLang] = useState(null);
+  const [charCount, setCharCount] = useState(0);
+  const [error, setError] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
+    setCharCount(sourceText.length);
+  }, [sourceText]);
+
+  // Auto-translate on text change with debounce
+  useEffect(() => {
     const timer = setTimeout(() => {
-      setFlipComplete(true);
-    }, 1400);
+      if (sourceText.trim() && sourceText.length > 2) {
+        handleTranslate();
+      }
+    }, 800);
     return () => clearTimeout(timer);
-  }, []);
+  }, [sourceText, fromLang, toLang]);
+
+  const handleSwap = () => {
+    if (fromLang === "auto" || isTranslating) return;
+    const temp = fromLang;
+    setFromLang(toLang);
+    setToLang(temp);
+    setSourceText(translatedText);
+    setTranslatedText(sourceText);
+    setDetectedLang(null);
+  };
 
   const handleTranslate = async () => {
     if (!sourceText.trim()) {
       setTranslatedText("");
+      setError(null);
       return;
     }
     
     setIsTranslating(true);
+    setError(null);
     
     try {
-      // Auto-detect language if needed
       let sourceLang = fromLang;
+      
+      // Auto-detect language if needed
       if (fromLang === "auto") {
         const detectionResult = await detectLanguage(sourceText);
         sourceLang = detectionResult.detected_language || "desia";
+        setDetectedLang(sourceLang);
       }
       
       // Call translation API
       const result = await translateText(sourceText, sourceLang, toLang);
-      
       setTranslatedText(result.translated_text || result.translation);
-    } catch (error) {
-      console.error("Translation failed:", error);
-      setTranslatedText(
-        `⚠️ Translation Error\n\nCould not connect to translation service. Please check:\n• Backend server is running\n• API endpoint is correct\n• Network connection is stable\n\nError: ${error.message}`
-      );
+    } catch (err) {
+      console.error("Translation failed:", err);
+      setError("Translation service unavailable. Please check if backend is running.");
+      setTranslatedText("");
     } finally {
       setIsTranslating(false);
     }
+  };
+
+  const handleClear = () => {
+    setSourceText("");
+    setTranslatedText("");
+    setDetectedLang(null);
+    setError(null);
+    setCopySuccess(false);
+  };
+
+  const handleCopy = async () => {
+    if (!translatedText) return;
+    try {
+      await navigator.clipboard.writeText(translatedText);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const getLangLabel = (langId) => {
+    return languages.find(l => l.id === langId)?.label || langId;
+  };
+
+  const getLangFlag = (langId) => {
+    return languages.find(l => l.id === langId)?.flag || "🌐";
   };
 
   return (
@@ -91,110 +120,199 @@ export default function Translate() {
 
       <div className="translate-shell">
         <header className="landing-nav translate-nav">
-          <span className="brand">Desia Translator</span>
+          <span className="brand">🏛️ Desia Translator</span>
           <div className="nav-actions">
             <Link className="ghost-btn" to="/">
-              ← Back to home
+              ← Home
             </Link>
-            <button className="outline-btn">Need help?</button>
+            <button className="outline-btn" onClick={handleClear}>
+              🗑️ Clear
+            </button>
           </div>
         </header>
 
-        {showFlip && !flipComplete ? (
-          <FlipTransition onComplete={() => setFlipComplete(true)}>
-            <section className="translate-grid">
-              <div className="hero-copy translate-copy">
-                <p className="eyebrow">{headerCopy.eyebrow}</p>
-                <h1>{headerCopy.title}</h1>
-                <p className="lede">{headerCopy.subtitle}</p>
-                <div className="hero-cta">
-                  <button className="cta" onClick={handleTranslate} disabled={isTranslating}>
-                    {isTranslating ? "Translating…" : "Start translating"}
-                  </button>
-                  <button className="link-btn" onClick={() => setSourceText("")}>
-                    Reset form
-                  </button>
+        <div className="translate-container">
+          {/* Language Selector Bar */}
+          <div className="language-bar">
+            <div className="language-selector">
+              <label>From</label>
+              <select 
+                value={fromLang} 
+                onChange={(e) => setFromLang(e.target.value)}
+                className="lang-select"
+              >
+                {languages.map((lang) => (
+                  <option key={lang.id} value={lang.id}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
+              {detectedLang && fromLang === "auto" && (
+                <span className="detected-badge">
+                  Detected: {getLangLabel(detectedLang)}
+                </span>
+              )}
+            </div>
+
+            <button 
+              className="swap-button" 
+              onClick={handleSwap} 
+              disabled={fromLang === "auto" || isTranslating}
+              title="Swap languages"
+            >
+              ⇄
+            </button>
+
+            <div className="language-selector">
+              <label>To</label>
+              <select 
+                value={toLang} 
+                onChange={(e) => setToLang(e.target.value)}
+                className="lang-select"
+              >
+                {languages
+                  .filter((lang) => lang.id !== "auto")
+                  .map((lang) => (
+                    <option key={lang.id} value={lang.id}>
+                      {lang.label}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Translation Panels */}
+          <div className="translation-workspace">
+            {/* Source Panel */}
+            <div className="text-panel source-panel">
+              <div className="panel-header">
+                <div className="panel-title">
+                  <span className="lang-flag">{getLangFlag(fromLang)}</span>
+                  <span>{getLangLabel(fromLang)}</span>
                 </div>
-                <div className="stat-badges">
-                  <span>Zero-shot model</span>
-                  <span>Diffusion-based</span>
-                  <span>Free & Open-source</span>
+                <div className="char-counter">
+                  {charCount} / 5000
                 </div>
               </div>
+              
+              <textarea
+                className="text-input"
+                placeholder="Type or paste your text here to translate..."
+                value={sourceText}
+                onChange={(e) => setSourceText(e.target.value.slice(0, 5000))}
+                rows={12}
+              />
 
-              <section className="translate-panel" aria-live="polite">
-                <div className="translator-heading">
-                  <div>
-                    <p className="eyebrow">Translation Interface</p>
-                    <h2>Enter your text</h2>
-                  </div>
-                  <button className="swap" onClick={handleSwap} disabled={fromLang === "auto"}>
-                    Swap
-                  </button>
-                </div>
-
-                <TranslatorPanel
-                  languages={languages}
-                  fromLang={fromLang}
-                  toLang={toLang}
-                  onChangeFrom={setFromLang}
-                  onChangeTo={setToLang}
-                  sourceText={sourceText}
-                  onChangeSource={setSourceText}
-                  translatedText={translatedText}
-                  isTranslating={isTranslating}
-                  onTranslate={handleTranslate}
-                />
-              </section>
-            </section>
-          </FlipTransition>
-        ) : (
-          <section className="translate-grid">
-            <div className="hero-copy translate-copy">
-              <p className="eyebrow">{headerCopy.eyebrow}</p>
-              <h1>{headerCopy.title}</h1>
-              <p className="lede">{headerCopy.subtitle}</p>
-              <div className="hero-cta">
-                <button className="cta" onClick={handleTranslate} disabled={isTranslating}>
-                  {isTranslating ? "Translating…" : "Start translating"}
+              <div className="panel-footer">
+                <button 
+                  className="action-btn secondary"
+                  onClick={handleClear}
+                  disabled={!sourceText}
+                >
+                  Clear
                 </button>
-                <button className="link-btn" onClick={() => setSourceText("")}>
-                  Reset form
+                <button 
+                  className="action-btn primary"
+                  onClick={handleTranslate}
+                  disabled={!sourceText.trim() || isTranslating}
+                >
+                  {isTranslating ? (
+                    <>
+                      <span className="spinner"></span>
+                      Translating...
+                    </>
+                  ) : (
+                    <>⚡ Translate</>
+                  )}
                 </button>
-              </div>
-              <div className="stat-badges">
-                <span>Real-time context</span>
-                <span>Team-ready outputs</span>
-                <span>No credit card</span>
               </div>
             </div>
 
-            <section className="translate-panel" aria-live="polite">
-              <div className="translator-heading">
-                <div>
-                  <p className="eyebrow">Control room</p>
-                  <h2>Refine the output</h2>
+            {/* Translation Status */}
+            <div className="translation-status">
+              {isTranslating && (
+                <div className="status-indicator translating">
+                  <span className="pulse-dot"></span>
+                  Processing...
                 </div>
-                <button className="swap" onClick={handleSwap} disabled={fromLang === "auto"}>
-                  Swap
-                </button>
-              </div>
+              )}
+              {error && (
+                <div className="status-indicator error">
+                  ⚠️ {error}
+                </div>
+              )}
+              {translatedText && !isTranslating && !error && (
+                <div className="status-indicator success">
+                  ✓ Translation complete
+                </div>
+              )}
+            </div>
 
-              <TranslatorPanel
-                languages={languages}
-                fromLang={fromLang}
-                toLang={toLang}
-                onChangeFrom={setFromLang}
-                onChangeTo={setToLang}
-                sourceText={sourceText}
-                onChangeSource={setSourceText}
-                translatedText={translatedText}
-                isTranslating={isTranslating}
-                onTranslate={handleTranslate}
+            {/* Target Panel */}
+            <div className="text-panel target-panel">
+              <div className="panel-header">
+                <div className="panel-title">
+                  <span className="lang-flag">{getLangFlag(toLang)}</span>
+                  <span>{getLangLabel(toLang)}</span>
+                </div>
+                {translatedText && (
+                  <button 
+                    className="copy-btn"
+                    onClick={handleCopy}
+                    title="Copy to clipboard"
+                  >
+                    {copySuccess ? "✓ Copied!" : "📋 Copy"}
+                  </button>
+                )}
+              </div>
+              
+              <textarea
+                className="text-input"
+                placeholder="Translation will appear here..."
+                value={translatedText}
+                readOnly
+                rows={12}
               />
-            </section>
-          </section>
-        )}
+
+              <div className="panel-footer">
+                <div className="translation-info">
+                  {translatedText && (
+                    <span className="word-count">
+                      {translatedText.split(/\s+/).filter(w => w).length} words
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Info Cards */}
+          <div className="info-cards">
+            <div className="info-card">
+              <div className="info-icon">🚀</div>
+              <div className="info-content">
+                <h4>Real-time Translation</h4>
+                <p>Automatic translation as you type with AI-powered accuracy</p>
+              </div>
+            </div>
+            
+            <div className="info-card">
+              <div className="info-icon">🛡️</div>
+              <div className="info-content">
+                <h4>Preserve Heritage</h4>
+                <p>Supporting endangered Desia tribal language preservation</p>
+              </div>
+            </div>
+            
+            <div className="info-card">
+              <div className="info-icon">🎯</div>
+              <div className="info-content">
+                <h4>Zero-Shot Model</h4>
+                <p>Diffusion-based approach for semantic accuracy</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

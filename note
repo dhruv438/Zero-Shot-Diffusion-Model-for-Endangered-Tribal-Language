@@ -9,3 +9,15 @@ cd c:\Users\dhruv\desia-translator\frontend
 npm run dev
 
 Then open http://localhost:5173
+
+
+ we are only translating the english to odia translation now when i click the desia to english or desia to odia it should give me an out put now how will i train the desia to english dont do any change in my code
+i have chatgpt api key for desia now use the api to get the desia to english , english to desia , odia to desia , desia to odia translation
+use the openai api key in the backend to translate odia to desia and vice versa and english to desia and vice versa
+ଏବେ ଅନା ପର୍କା ମନ୍‌ ନା-ଚଲେ
+
+now my goal is to convert the generated odia sentence to desia. my plan is to make odia as a bridge language for converison since we cant directly translate english to desia or vice versa. but odia to desia and vice versa can be done since i have a dictionary where it contains, desia words, odia words, desia sentences.
+
+also i have a file where category,desia words, odia words are there.(category reprsents the alphabets or the parts of the speech).
+
+so what we can do is we will look the odia words in dictionary, and find its alternate desia word then apply some algorithm and whatever the process is to make a proper desia sentence. 

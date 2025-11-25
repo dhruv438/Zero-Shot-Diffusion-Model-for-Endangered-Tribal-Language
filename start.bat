@@ -45,10 +45,26 @@ if not exist "frontend\node_modules" (
 echo.
 echo Starting Backend Server (Port 5002)...
 echo.
-start "Desia Backend" cmd /k "backend\.venv\Scripts\python.exe -m uvicorn backend.app.main:get_app --host 127.0.0.1 --port 5002"
+start "Desia Backend" cmd /k "backend\.venv\Scripts\python.exe -m uvicorn backend.app.main:get_app --host 127.0.0.1 --port 5002 --reload"
 
 REM Wait for backend to start
 timeout /t 5 /nobreak >nul
+
+echo Performing backend health check...
+for /f "usebackq delims=" %%H in (`powershell -NoProfile -Command "try { (Invoke-RestMethod -Uri 'http://127.0.0.1:5002/api/health' -TimeoutSec 5).status } catch { 'FAILED' }"`) do set HEALTH=%%H
+if "%HEALTH%"=="ok" (
+    echo Backend health: OK
+) else (
+    echo Backend health: FAILED (status=%HEALTH%)
+)
+
+echo Checking Desia dictionary mappings...
+for /f "usebackq delims=" %%C in (`powershell -NoProfile -Command "try { & 'backend/.venv/Scripts/python.exe' -c 'from backend.app.odia_desia_bridge import get_bridge; print(len(get_bridge().odia_to_desia))' } catch { 'ERROR' }"`) do set MAPCOUNT=%%C
+if "%MAPCOUNT%"=="ERROR" (
+    echo Dictionary load failed.
+) else (
+    echo Loaded Odia->Desia mappings: %MAPCOUNT%
+)
 
 echo.
 echo Starting Frontend Server (Port 5173)...
@@ -62,6 +78,7 @@ echo ========================================
 echo.
 echo Backend:  http://127.0.0.1:5002
 echo Frontend: http://localhost:5173
+echo Desia API: POST http://127.0.0.1:5002/api/translate_with_desia
 echo.
 echo Both servers are running in separate windows.
 echo Close those windows to stop the servers.

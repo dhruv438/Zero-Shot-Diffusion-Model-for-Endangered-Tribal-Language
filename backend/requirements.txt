@@ -1,9 +1,8 @@
-fastapi==0.115.0
-uvicorn[standard]==0.30.0
-transformers==4.44.2
+fastapi
+uvicorn
+transformers
 torch
-sentencepiece==0.2.0
-accelerate==0.33.0
-numpy
-# NOTE: Python 3.14 may not have prebuilt wheels for sentencepiece yet.
-# Recommended: use Python 3.10 or 3.11 for easier installation.
+openai
+pandas
+python-dotenv
+aiohttp

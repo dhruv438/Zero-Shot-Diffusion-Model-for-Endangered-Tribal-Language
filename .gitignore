@@ -1,83 +1,111 @@
-# Python
+# --- Python Backend ---
+backend/.venv/
+backend/venv/
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
+backend/**/__pycache__/
+*.pyo
+*.pyd
 *.so
-.Python
-build/
-develop-eggs/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.pyre/
+.pytype/
+
+# --- Node / Frontend (Vite React) ---
+frontend/node_modules/
+frontend-backup/node_modules/
+node_modules/
+.dist/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+.vite/
+# Vite cache sometimes created in project root
+.vite-cache/
 
-# Virtual Environment
-.venv/
-venv/
-ENV/
-env/
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Model cache
-.cache/
-models/
-*.bin
-*.safetensors
+# Build outputs
+build/
+*.tgz
 
 # Logs
 *.log
-logs/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Node
-node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# Build outputs
-dist/
-build/
+# Dependency analysis / audit reports
+report-*.
+
+# --- Environment & Secrets ---
+.env
+.env.*
+!.env.example
+frontend/.env.local
+frontend/.env
+backend/.env
+
+# --- IDE / Editor ---
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# --- OS / Misc ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- TypeScript / Babel / Cache ---
 *.tsbuildinfo
+.cache/
+.parcel-cache/
 
-# HuggingFace cache
-.huggingface/
-hf-cache/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
-
-# Temporary files
+# --- Temporary files ---
+*.swp
+*.swo
 *.tmp
-temp/
-tmp/
+*.temp
+*.bak
+
+# --- Testing artifacts ---
+jest-html-reporters-*/
+jest-*/
+playwright-report/
+
+# --- Images / Media generated ---
+*.generated.png
+*.generated.jpg
+
+# --- Local data ---
+/data/**
+!data/README.md
+
+# --- Git ---
+.git-credentials
+
+# --- Additional Python notebooks etc. ---
+.ipynb_checkpoints/
+
+# --- Archive dumps ---
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# --- Lock files (keep one authoritative) ---
+# If using one package manager, ignore others
+# Uncomment if you choose only one
+# yarn.lock
+# package-lock.json
+# pnpm-lock.yaml
+
+# --- ChatGPT Integration Files ---
+# Exclude all ChatGPT API integration files
+backend/chatgpt_integration/
+backend/app/chatgpt_service.py
+.env
+.env.example
