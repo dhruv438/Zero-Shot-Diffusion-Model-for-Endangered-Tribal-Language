@@ -4,17 +4,6 @@ export default function HeroFlipCard({ sections }) {
   const [currentSection, setCurrentSection] = useState(0);
   const [isFlipping, setIsFlipping] = useState(false);
 
-  // Auto-advance to next section
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentSection < sections.length - 1) {
-        nextSection();
-      }
-    }, 8000); // Auto-flip every 8 seconds
-
-    return () => clearTimeout(timer);
-  }, [currentSection]);
-
   const nextSection = () => {
     if (isFlipping || currentSection >= sections.length - 1) return;
     

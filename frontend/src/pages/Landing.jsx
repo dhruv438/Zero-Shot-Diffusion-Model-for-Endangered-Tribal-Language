@@ -59,8 +59,8 @@ const solutionSteps = [
   },
   {
     number: "03",
-    title: "Cross-Lingual Transfer",
-    body: "Using XLM-R embeddings to transfer knowledge from high-resource languages to zero-shot Desia translation."
+    title: "Cross-Lingual Translation",
+    body: "Leveraging Meta's No Language Left Behind 200 model for high-quality translation across 200+ languages including low-resource Indic languages."
   },
   {
     number: "04",
@@ -86,19 +86,9 @@ const features = [
     badge: null
   },
   {
-    title: "Dataset Builder Tool",
-    body: "Contribute to Desia preservation by helping build the first-ever comprehensive digital Desia language dataset.",
+    title: "Communuity based Dataset",
+    body: "Contribute to Desia preservation by helping build the comprehensive digital Desia language dataset.",
     badge: "Community"
-  },
-  {
-    title: "Model Playground",
-    body: "Interactive demo environment to test translations, explore model behavior, and validate outputs in real-time.",
-    badge: "New"
-  },
-  {
-    title: "Linguistic Variant Support",
-    body: "Handles regional dialects and code-mixing patterns common across Koraput's diverse village communities.",
-    badge: null
   }
 ];
 
@@ -339,9 +329,6 @@ export default function Landing() {
               <section key="problems" className="problem-section">
                 <div className="section-header">
                   <h2 className="section-title section-title--white">Challenges of Endangered Languages</h2>
-                  <p className="section-subtitle">
-                    Explore unique obstacles that traditional NLP approaches cannot solve
-                  </p>
                 </div>
                 <div className="flipping-cards-grid">
                   {problems.map((problem, index) => (
@@ -358,9 +345,6 @@ export default function Landing() {
               <section key="solutions" className="solution-section" id="solution-section">
                 <div className="section-header">
                   <h2 className="section-title">Our Zero-Shot Diffusion Approach</h2>
-                  <p className="section-subtitle">
-                     Learn how diffusion models enable translation without parallel data—a first for Desia.
-                  </p>
                 </div>
                 <div className="flipping-cards-grid solution-cards-grid">
                   {solutionSteps.map((step, index) => (
@@ -376,10 +360,7 @@ export default function Landing() {
               // Section 3: Features
               <section key="features" className="features-section">
                 <div className="section-header">
-                  <h2 className="section-title">Powerful Features for Language Preservation</h2>
-                  <p className="section-subtitle">
-                    Discover features built for researchers, linguists, and community members
-                  </p>
+                  <h2 className="section-title">Key Features & Capabilities</h2>
                 </div>
                 <div className="flipping-cards-grid features-cards-grid">
                   {features.map((feature, index) => (
